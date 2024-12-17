@@ -10,7 +10,7 @@ export default {
 };
 </script>
 
-<style>
+<!-- <style>
 /* Add any global styles here if needed */
 #app {
   font-family: Arial, sans-serif;
@@ -21,4 +21,4 @@ export default {
   justify-content: center;
   background-color: #f3f4f6;
 }
-</style>
+</style> -->
