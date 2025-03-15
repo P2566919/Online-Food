@@ -55,22 +55,22 @@ export default {
     methods: {
         async fetchRestaurant() {
             const role = localStorage.getItem("role")
-            if(role==='admin'){
-                 try {
-                const response = await axios.get("http://localhost:4000/api/all-restaurants", {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-                    },
-                });
-                this.restaurant = response.data.data;
-            } catch (error) {
-                console.error("Failed to fetch restaurant:", error);
-                this.restaurant = null;
-            }
-            }else{
+            if (role === 'admin') {
+                try {
+                    const response = await axios.get("https://food-backend-rz86.onrender.com/api/all-restaurants", {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+                        },
+                    });
+                    this.restaurant = response.data.data;
+                } catch (error) {
+                    console.error("Failed to fetch restaurant:", error);
+                    this.restaurant = null;
+                }
+            } else {
 
                 try {
-                    const response = await axios.get("http://localhost:4000/api/restaurant", {
+                    const response = await axios.get("https://food-backend-rz86.onrender.com/api/restaurant", {
                         headers: {
                             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
                         },
@@ -85,7 +85,7 @@ export default {
         async createRestaurant() {
             try {
                 const response = await axios.post(
-                    "http://localhost:4000/api/create-restaurant",
+                    "https://food-backend-rz86.onrender.com/api/create-restaurant",
                     this.newRestaurant,
                     {
                         headers: {

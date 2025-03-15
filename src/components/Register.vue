@@ -61,7 +61,7 @@ export default {
             this.errorMessage = '';
             this.successMessage = '';
             try {
-                await axios.post('http://localhost:4000/api/register', this.form);
+                await axios.post('https://food-backend-rz86.onrender.com/api/register', this.form);
                 this.successMessage = 'Registration successful! Please log in.';
                 this.resetForm();
             } catch (error) {

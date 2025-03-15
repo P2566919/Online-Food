@@ -70,7 +70,7 @@ export default {
         // Fetch restaurant details
         async fetchRestaurant() {
             try {
-                const response = await axios.get("http://localhost:4000/api/restaurant", {
+                const response = await axios.get("https://food-backend-rz86.onrender.com/api/restaurant", {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
                     },
@@ -91,7 +91,7 @@ export default {
         async fetchOrders() {
             try {
                 const response = await axios.get(
-                    `http://localhost:4000/api/restaurants/${this.restaurant._id}/orders`,
+                    `https://food-backend-rz86.onrender.com/api/restaurants/${this.restaurant._id}/orders`,
                     {
                         headers: {
                             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -109,7 +109,7 @@ export default {
         async updateOrderStatus(order) {
             try {
                 await axios.put(
-                    `http://localhost:4000/api/restaurants/${this.restaurant._id}/orders/${order._id}`,
+                    `https://food-backend-rz86.onrender.com/api/restaurants/${this.restaurant._id}/orders/${order._id}`,
                     { status: order.orderStatus },
                     {
                         headers: {
@@ -126,7 +126,7 @@ export default {
         // Delete an order
         async deleteOrder(orderId) {
             try {
-                await axios.delete(`http://localhost:4000/api/restaurants/${this.restaurant._id}/orders/${orderId}`, {
+                await axios.delete(`https://food-backend-rz86.onrender.com/api/restaurants/${this.restaurant._id}/orders/${orderId}`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
                     },

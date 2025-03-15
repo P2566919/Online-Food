@@ -97,7 +97,7 @@ export default {
     methods: {
         async fetchRestaurant() {
             try {
-                const response = await axios.get("http://localhost:4000/api/restaurant", {
+                const response = await axios.get("https://food-backend-rz86.onrender.com/api/restaurant", {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
                     },
@@ -115,7 +115,7 @@ export default {
         async fetchMenu() {
             try {
                 const response = await axios.get(
-                    `http://localhost:4000/api/restaurants/${this.restaurant._id}/menu`,
+                    `https://food-backend-rz86.onrender.com/api/restaurants/${this.restaurant._id}/menu`,
                     {
                         headers: {
                             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -130,7 +130,7 @@ export default {
         async addMenuItem() {
             try {
                 const response = await axios.post(
-                    `http://localhost:4000/api/restaurants/${this.restaurant._id}/menu`,
+                    `https://food-backend-rz86.onrender.com/api/restaurants/${this.restaurant._id}/menu`,
                     this.newMenuItem,
                     {
                         headers: {
@@ -149,7 +149,7 @@ export default {
         async updateMenuItem() {
             try {
                 await axios.put(
-                    `http://localhost:4000/api/restaurants/${this.restaurant._id}/menu/${this.editingItemId}`,
+                    `https://food-backend-rz86.onrender.com/api/restaurants/${this.restaurant._id}/menu/${this.editingItemId}`,
                     this.newMenuItem,
                     {
                         headers: {
@@ -170,7 +170,7 @@ export default {
         async deleteMenuItem(itemId) {
             try {
                 await axios.delete(
-                    `http://localhost:4000/api/restaurants/${this.restaurant._id}/menu/${itemId}`,
+                    `https://food-backend-rz86.onrender.com/api/restaurants/${this.restaurant._id}/menu/${itemId}`,
                     {
                         headers: {
                             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,

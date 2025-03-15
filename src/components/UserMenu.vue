@@ -55,7 +55,7 @@ export default {
     },
     methods: {
         fetchMenus() {
-            fetch("http://localhost:4000/api/all-menus")
+            fetch("https://food-backend-rz86.onrender.com/api/all-menus")
                 .then((res) => res.json())
                 .then((data) => {
                     this.menus = data.allMenus.map((menu) => ({

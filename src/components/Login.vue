@@ -36,7 +36,7 @@ export default {
         async loginUser() {
             this.errorMessage = '';
             try {
-                const response = await axios.post('http://localhost:4000/api/login', this.form);
+                const response = await axios.post('https://food-backend-rz86.onrender.com/api/login', this.form);
                 // Redirect or save token if needed, based on response data
                 localStorage.setItem('accessToken', response.data.accessToken);
                 localStorage.setItem('user', JSON.stringify(response.data.user));

@@ -76,7 +76,7 @@ export default {
                 console.log('Order Payload:', orderPayload); // Debugging
 
                 // Send order to the API with accessToken
-                const response = await fetch('http://localhost:4000/api/order', {
+                const response = await fetch('https://food-backend-rz86.onrender.com/api/order', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
