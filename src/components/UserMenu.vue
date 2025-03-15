@@ -1,13 +1,30 @@
 <template>
     <div class="menu-container">
-        <!-- Cart Icon -->
-        <div class="cart-icon-container">
-            <button class="cart-button" @click="goToCart">
-                <i class="fas fa-shopping-cart"></i>
-                <span v-if="cartItems.length" class="cart-count">{{ cartItems.length }}</span>
-            </button>
-        </div>
+        <!-- Auth & Cart Icons -->
+        <div class="top-right-container">
+            <div v-if="!isAuthenticated" class="auth-buttons">
+                <button @click="goToLogin">Login</button>
+                <button @click="goToSignup">Sign Up</button>
+            </div>
+            <div v-else class="profile-container">
+                
+                <button class="profile-button" @click="toggleDropdown">
+                    <i class="fas fa-user-circle"></i>
+                    <!-- <p>Hello </p> -->
 
+                </button>
+                <div v-if="showDropdown" class="dropdown-menu">
+                    <button @click="logout">Logout</button>
+                </div>
+            </div>
+            <div class="cart-icon-container">
+                <button class="cart-button" @click="goToCart">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span v-if="cartItems.length" class="cart-count">{{ cartItems.length }}</span>
+                </button>
+            </div>
+        </div>
+        
         <!-- Menu Items -->
         <h1>Explore Menus</h1>
         <div class="menu-list">
@@ -20,9 +37,7 @@
                     <label for="quantity">Quantity:</label>
                     <input type="number" v-model.number="menu.quantity" min="1" class="quantity-input" />
                 </div>
-                <button class="add-to-cart" @click="addToCart(menu)">
-                    Add to Cart
-                </button>
+                <button class="add-to-cart" @click="addToCart(menu)">Add to Cart</button>
             </div>
         </div>
     </div>
@@ -32,43 +47,95 @@
 export default {
     data() {
         return {
-            menus: [], // Menu items fetched from API
-            cartItems: [], // Cart items
+            menus: [],
+            cartItems: [],
+            isAuthenticated: false,
+            showDropdown: false,
         };
     },
     methods: {
         fetchMenus() {
-            // Replace with actual API call
             fetch("http://localhost:4000/api/all-menus")
                 .then((res) => res.json())
                 .then((data) => {
                     this.menus = data.allMenus.map((menu) => ({
                         ...menu,
-                        quantity: 1, // Initialize quantity field
+                        quantity: 1,
                     }));
                 });
         },
-        addToCart(menu) {
-            const existingItem = this.cartItems.find((item) => item._id === menu._id);
+        addToCart(item) {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const existingItem = cart.find(cartItem => cartItem.id === item.id);
             if (existingItem) {
-                existingItem.quantity += menu.quantity;
+                existingItem.quantity += 1;
             } else {
-                this.cartItems.push({ ...menu, quantity: menu.quantity });
+                cart.push({ ...item, quantity: 1 });
             }
-            this.$forceUpdate(); // Ensure reactivity when modifying arrays
+            localStorage.setItem('cart', JSON.stringify(cart));
+            alert(`${item.itemName} has been added to your cart!`);
         },
         goToCart() {
-            // Redirect to cart page or open cart modal
             this.$router.push({ name: 'CartPage' });
         },
+        goToLogin() {
+            this.$router.push({ name: 'Login' });
+        },
+        goToSignup() {
+            this.$router.push({ name: 'Register' });
+        },
+        toggleDropdown() {
+            this.showDropdown = !this.showDropdown;
+        },
+        logout() {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('user');
+            this.isAuthenticated = false;
+            this.showDropdown = false;
+            this.$router.push({ name: 'Login' });
+        }
     },
     mounted() {
         this.fetchMenus();
-    },
+        this.cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+        this.isAuthenticated = !!localStorage.getItem('accessToken');
+    }
 };
 </script>
 
 <style>
+.top-right-container {
+    position: fixed;
+    top: 10px;
+    right: 60px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.auth-buttons button, .profile-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.profile-button {
+    font-size: 24px;
+}
+
+.dropdown-menu {
+    position: absolute;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+/* .cart-icon-container {
+    position: relative;
+} */
 .menu-container {
     padding: 20px;
     position: relative;

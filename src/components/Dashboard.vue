@@ -31,13 +31,13 @@ export default {
     data() {
         return {
             user: JSON.parse(localStorage.getItem("user")) || {},
-            activeTab: "usermenu",
+            activeTab: "orders",
             tabs: [
-                { name: "orders", label: "Orders", roles: ["restaurant"] },
+                { name: "orders", label: "Orders", roles: ["restaurant",'admin'] },
                 { name: "menu", label: "Menu", roles: ["restaurant"] },
                 { name: "usermenu", label: "UserMenu", roles: ["admin"] },
-                { name: "restaurant", label: "Restaurant", roles: ["restaurant"] },
-                { name: "profile", label: "Profile Settings" },
+                { name: "restaurant", label: "Restaurant", roles: ["restaurant",'admin'] },
+                // { name: "profile", label: "Profile Settings" },
 
             ],
         };

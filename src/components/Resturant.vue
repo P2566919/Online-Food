@@ -54,8 +54,10 @@ export default {
     },
     methods: {
         async fetchRestaurant() {
-            try {
-                const response = await axios.get("http://localhost:4000/api/restaurant", {
+            const role = localStorage.getItem("role")
+            if(role==='admin'){
+                 try {
+                const response = await axios.get("http://localhost:4000/api/all-restaurants", {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
                     },
@@ -64,6 +66,20 @@ export default {
             } catch (error) {
                 console.error("Failed to fetch restaurant:", error);
                 this.restaurant = null;
+            }
+            }else{
+
+                try {
+                    const response = await axios.get("http://localhost:4000/api/restaurant", {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+                        },
+                    });
+                    this.restaurant = response.data.data;
+                } catch (error) {
+                    console.error("Failed to fetch restaurant:", error);
+                    this.restaurant = null;
+                }
             }
         },
         async createRestaurant() {

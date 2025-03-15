@@ -40,9 +40,22 @@ export default {
                 // Redirect or save token if needed, based on response data
                 localStorage.setItem('accessToken', response.data.accessToken);
                 localStorage.setItem('user', JSON.stringify(response.data.user));
+                localStorage.setItem('role', JSON.stringify(response.data.user.role));
+
+                if(response.data.user.role !== 'customer') {
+                    const redirectTo = localStorage.getItem('redirectTo') || '/dashboard';
+                    localStorage.removeItem('redirectTo'); // Clean up
+                    window.location.href = redirectTo; // Redirect user
+                }else{
+                    const redirectTo = localStorage.getItem('redirectTo') || '/';
+                    localStorage.removeItem('redirectTo'); // Clean up
+                    window.location.href = redirectTo; // Redirect user
+                }
+               
+
 
                 // Redirect to the dashboard
-                this.$router.push('/dashboard');
+                // this.$router.push('/dashboard');
             } catch (error) {
                 this.errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
             }

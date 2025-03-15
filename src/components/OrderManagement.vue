@@ -17,14 +17,28 @@
                             <th>Item</th>
                             <th>Price</th>
                             <th>Status</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="order in orders" :key="order._id">
                             <td>{{ order._id }}</td>
-                            <td>{{ order.itemName }}</td>
-                            <td>{{ order.price }}</td>
-                            <td>{{ order.status }}</td>
+                            <td>{{ order.orderedItems[0].menuItem.itemName }}</td>
+                            <td>{{ order.totalCost }}</td>
+                            <td>{{ order.orderStatus }}</td>
+                            <td>
+                                <select v-model="order.orderStatus">
+                                    <option value="pending">Pending</option>
+                                    <option value="preparing">Preparing</option>
+                                    <option value="out for delivery">Sent Out</option>
+                                    <option value="unavailable">Unavailable</option>
+
+
+                                    <option value="delivered">Delivered</option>
+                                </select>
+                                <button @click="updateOrderStatus(order)">Update</button>
+                                <!-- <button @click="deleteOrder(order._id)">Delete</button> -->
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -84,12 +98,45 @@ export default {
                         },
                     }
                 );
-                this.orders = response.data.allOrders || []; // Set order data
+                this.orders = response.data.order || []; // Set order data
             } catch (error) {
                 console.error("Failed to fetch orders:", error);
                 this.orders = []; // Handle errors gracefully
             }
         },
+        
+        // Update order status
+        async updateOrderStatus(order) {
+            try {
+                await axios.put(
+                    `http://localhost:4000/api/restaurants/${this.restaurant._id}/orders/${order._id}`,
+                    { status: order.orderStatus },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+                        },
+                    }
+                );
+                alert("Order status updated successfully!");
+            } catch (error) {
+                console.error("Failed to update order status:", error);
+            }
+        },
+        
+        // Delete an order
+        async deleteOrder(orderId) {
+            try {
+                await axios.delete(`http://localhost:4000/api/restaurants/${this.restaurant._id}/orders/${orderId}`, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+                    },
+                });
+                this.orders = this.orders.filter(order => order._id !== orderId);
+                alert("Order deleted successfully!");
+            } catch (error) {
+                console.error("Failed to delete order:", error);
+            }
+        }
     },
     async mounted() {
         // Start loading and fetch restaurant details
