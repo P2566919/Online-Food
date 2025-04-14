@@ -1,325 +1,410 @@
 <template>
     <div class="cart-page">
-        <!-- Back Button -->
-        <button class="back-button" @click="goBack">
-            <i class="fas fa-arrow-left"></i> Back
-        </button>
-
-        <h1>My Cart</h1>
-        <div v-if="cartItems.length">
-            <ul class="cart-list">
-                <li v-for="(item, index) in cartItems" :key="index" class="cart-item">
-                    <img :src="item.images[0]" alt="menu image" class="item-image" />
-                    <div class="item-details">
-                        <h3>{{ item.itemName }}</h3>
-                        <p>Price: ₦{{ item.price.toLocaleString() }}</p>
-                        <div class="quantity-controls">
-                            <button @click="decreaseQuantity(index)" :disabled="item.quantity <= 1">-</button>
-                            <span>{{ item.quantity }}</span>
-                            <button @click="increaseQuantity(index)">+</button>
-                        </div>
-                        <button @click="removeItem(index)" class="remove-button">Remove</button>
-                    </div>
-                </li>
-            </ul>
-            <div class="cart-summary">
-                <h3>Total: ₦{{ cartTotal.toLocaleString() }}</h3>
-                <button @click="proceedToPayment" class="payment-button" :disabled="isProcessing">
-                    {{ isProcessing ? "Processing..." : "Proceed to Payment" }}
+      <!-- Navigation -->
+      <button class="back-button" @click="goBack">
+        <i class="fas fa-arrow-left"></i> Back
+      </button>
+      <br />
+  
+      <!-- Main Content -->
+      <h2>My Cart</h2>
+      
+      <!-- Cart with Items -->
+      <div v-if="hasItems">
+        <ul class="cart-list">
+          <li 
+            v-for="(item, index) in cartItems" 
+            :key="`${item._id}-${index}`" 
+            class="cart-item"
+          >
+            <img 
+              :src="item.images[0] || defaultImage" 
+              :alt="`${item.itemName} image`" 
+              class="item-image"
+            />
+            <div class="item-details">
+              <h3>{{ item.itemName }}</h3>
+              <p class="price">₦{{ formatPrice(item.price) }}</p>
+              <div class="quantity-controls">
+                <button 
+                  @click="updateQuantity(index, -1)" 
+                  :disabled="item.quantity <= 1"
+                >
+                  -
                 </button>
+                <span>{{ item.quantity }}</span>
+                <button @click="updateQuantity(index, 1)">+</button>
+              </div>
+              <button 
+                @click="removeItem(index)" 
+                class="remove-button"
+              >
+                Remove
+              </button>
             </div>
+          </li>
+        </ul>
+  
+        <!-- Cart Summary -->
+        <div class="cart-summary">
+          <h3>Total: ₦{{ formatPrice(cartTotal) }}</h3>
+          <button 
+            @click="proceedToPayment" 
+            class="payment-button" 
+            :disabled="isProcessing || !hasItems"
+          >
+            <span v-if="isProcessing">
+              <i class="fas fa-spinner fa-spin"></i> Processing...
+            </span>
+            <span v-else>Proceed to Payment</span>
+          </button>
         </div>
-        <div v-else class="empty-cart">
-            <img src="https://via.placeholder.com/200x200?text=Empty+Cart" alt="Empty Cart" class="empty-cart-image" />
-            <p>Your cart is empty!</p>
-            <router-link to="/menu" class="continue-shopping">Continue Shopping</router-link>
-        </div>
+      </div>
+  
+      <!-- Empty Cart State -->
+      <div v-else class="empty-cart">
+        <div class="empty-cart-placeholder"></div>
+        <p>Your cart is empty!</p>
+        <router-link 
+          to="/" 
+          class="continue-shopping"
+        >
+          Continue Shopping
+        </router-link>
+      </div>
     </div>
-</template>
-
-<script>
-export default {
+  </template>
+  
+  <script>
+  export default {
     name: "CartPage",
     data() {
-        return {
-            cartItems: JSON.parse(localStorage.getItem('cart')) || [],
-            isProcessing: false, // Loading state for payment button
-        };
+      return {
+        cartItems: [],
+        isProcessing: false,
+        defaultImage: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXV0ZW5zaWxzIj48cGF0aCBkPSJNMyA5aDQuNWEyIDIgMCAwIDEgMS43NSAxLjBsLjkgMS4yYTIgMiAwIDAgMCAxLjc1IDFIMjEiLz48cGF0aCBkPSJNMyAzaDE4djRhMiAyIDAgMCAxLTIgMkg1YTIgMiAwIDAgMS0yLTJaIi8+PHBhdGggZD0ibTMgMTYgNS0xIi8+PHBhdGggZD0ibTMgMTkgNS0xIi8+PC9zdmc+'
+      };
     },
     computed: {
-        cartTotal() {
-            return this.cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
-        },
+      cartTotal() {
+        return this.cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+      },
+      hasItems() {
+        return this.cartItems.length > 0;
+      },
+      restaurantId() {
+        if (!this.hasItems) return null;
+        return this.cartItems[0].restaurantId;
+      },
+      isValidOrder() {
+        return this.cartItems.every(item => item.restaurantId === this.restaurantId);
+      }
+    },
+    created() {
+      this.loadCart();
     },
     methods: {
-        increaseQuantity(index) {
-            this.cartItems[index].quantity += 1;
-            this.updateCart();
-        },
-        decreaseQuantity(index) {
-            if (this.cartItems[index].quantity > 1) {
-                this.cartItems[index].quantity -= 1;
-                this.updateCart();
-            }
-        },
-        removeItem(index) {
-            this.cartItems.splice(index, 1);
-            this.updateCart();
-        },
-        updateCart() {
-            localStorage.setItem('cart', JSON.stringify(this.cartItems));
-        },
-        async proceedToPayment() {
-            this.isProcessing = true; // Show loading state
-            try {
-                // Check for accessToken in localStorage
-                const accessToken = localStorage.getItem('accessToken');
-                if (!accessToken) {
-                    // Save the current page URL to redirect back after login
-                    localStorage.setItem('redirectTo', window.location.pathname);
-                    alert('You need to login to proceed to payment.');
-                    window.location.href = '/login'; // Redirect to login page
-                    return;
-                }
-
-                // Fetch cart items from localStorage
-                const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
-
-                // Check for unique restaurantId
-                const restaurantIds = [...new Set(cartItems.map(item => item.restaurantId))];
-
-                if (restaurantIds.length > 1) {
-                    // Throw error if there are multiple restaurants
-                    alert('Error: You can only order from one restaurant at a time.');
-                    return;
-                }
-
-                // Extract single restaurantId
-                const restaurantId = restaurantIds[0];
-
-                // Prepare order payload
-                const orderPayload = {
-                    restaurantId: restaurantId,
-                    orderedItems: cartItems.map(item => ({
-                        menuItem: item._id, // Assuming 'id' is the unique menu item ID
-                        quantity: item.quantity,
-                    })),
-                };
-
-                console.log('Order Payload:', orderPayload); // Debugging
-
-                // Send order to the API with accessToken
-                const response = await fetch('https://food-backend-rz86.onrender.com/api/order', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${accessToken}`, // Attach accessToken
-                    },
-                    body: JSON.stringify(orderPayload),
-                });
-
-                // Handle response
-                if (!response.ok) {
-                    throw new Error('Failed to place the order. Please try again.');
-                }
-
-                const data = await response.json();
-                console.log('Order Success:', data);
-
-                alert('Order placed successfully!');
-                // Clear cart after successful order
-                localStorage.removeItem('cart');
-                this.cartItems = []; // Clear cart in the UI
-                // window.location.href = '/success-page.html'; // Redirect to success page
-            } catch (error) {
-                console.error('Order Error:', error);
-                alert(error.message || 'Something went wrong. Please try again.');
-            } finally {
-                this.isProcessing = false; // Reset loading state
-            }
-        },
-        goBack() {
-            this.$router.go(-1); // Go back to the previous page
-        },
-    },
-};
-</script>
-
-<style scoped>
-.cart-page {
-    padding: 20px;
-    max-width: 800px;
+      loadCart() {
+        try {
+          const cartData = localStorage.getItem('cart');
+          this.cartItems = cartData ? JSON.parse(cartData) : [];
+        } catch (error) {
+          console.error("Error loading cart:", error);
+          this.cartItems = [];
+        }
+      },
+      saveCart() {
+        localStorage.setItem('cart', JSON.stringify(this.cartItems));
+      },
+      formatPrice(price) {
+        return price.toLocaleString('en-NG');
+      },
+      updateQuantity(index, change) {
+        const newQuantity = this.cartItems[index].quantity + change;
+        if (newQuantity > 0) {
+          this.cartItems[index].quantity = newQuantity;
+          this.saveCart();
+        }
+      },
+      removeItem(index) {
+        this.cartItems.splice(index, 1);
+        this.saveCart();
+        alert("Item removed from cart");
+      },
+      async proceedToPayment() {
+        if (!this.hasItems) return;
+        
+        if (!this.isValidOrder) {
+          alert("Please order from one restaurant at a time");
+          return;
+        }
+  
+        this.isProcessing = true;
+        
+        try {
+          const accessToken = localStorage.getItem('accessToken');
+          if (!accessToken) {
+            localStorage.setItem('redirectTo', '/cart');
+            this.$router.push('/login');
+            alert("Please login to continue");
+            return;
+          }
+  
+          const orderPayload = {
+            restaurantId: this.restaurantId,
+            orderedItems: this.cartItems.map(item => ({
+              menuItem: item._id,
+              quantity: item.quantity,
+            })),
+          };
+  
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/order`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify(orderPayload),
+          });
+  
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to place order');
+          }
+  
+          alert("Order placed successfully!");
+          this.clearCart();
+          this.$router.push('/orders');
+        } catch (error) {
+          console.error("Payment error:", error);
+          alert(error.message || "Payment failed. Please try again.");
+        } finally {
+          this.isProcessing = false;
+        }
+      },
+      clearCart() {
+        this.cartItems = [];
+        localStorage.removeItem('cart');
+      },
+      goBack() {
+        this.$router.go(-1);
+      }
+    }
+  };
+  </script>
+  
+  <style scoped>
+  .cart-page {
+    padding: 2rem;
+    max-width: 900px;
     margin: 0 auto;
-    position: relative;
-}
-
-/* Back Button */
-.back-button {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    padding: 8px 12px;
-    background-color: #007bff;
-    color: white;
+    font-family: 'Poppins', sans-serif;
+  }
+  
+  .back-button {
+    background: none;
     border: none;
-    border-radius: 4px;
+    color: #2c3e50;
+    font-size: 1rem;
     cursor: pointer;
-    font-size: 14px;
     display: flex;
     align-items: center;
-    gap: 5px;
-}
-
-.back-button:hover {
-    background-color: #0056b3;
-}
-
-.cart-list {
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .back-button:hover {
+    color: #42b983;
+  }
+  
+  .cart-list {
     list-style: none;
     padding: 0;
-}
-
-.cart-item {
+    margin: 2rem 0;
+  }
+  
+  .cart-item {
     display: flex;
-    align-items: center;
-    margin-bottom: 20px;
-    padding: 15px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.item-image {
-    width: 100px;
-    height: 100px;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  
+  .cart-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .item-image {
+    width: 120px;
+    height: 120px;
     border-radius: 8px;
     object-fit: cover;
-    margin-right: 20px;
-}
-
-.item-details {
+  }
+  
+  .item-details {
     flex: 1;
-}
-
-.item-details h3 {
-    margin: 0 0 10px;
-    font-size: 18px;
+  }
+  
+  .item-details h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.2rem;
     color: #333;
-}
-
-.item-details p {
-    margin: 0 0 10px;
-    color: #666;
-}
-
-.quantity-controls {
+  }
+  
+  .price {
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0.5rem 0;
+  }
+  
+  .quantity-controls {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
-}
-
-.quantity-controls button {
-    padding: 5px 10px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+  
+  .quantity-controls button {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+    background: white;
+    font-size: 1rem;
     cursor: pointer;
-}
-
-.quantity-controls button:disabled {
-    background-color: #ccc;
+    transition: all 0.2s;
+  }
+  
+  .quantity-controls button:not(:disabled):hover {
+    background: #f0f0f0;
+  }
+  
+  .quantity-controls button:disabled {
+    opacity: 0.5;
     cursor: not-allowed;
-}
-
-.quantity-controls span {
-    font-size: 16px;
-    font-weight: bold;
-}
-
-.remove-button {
-    padding: 5px 10px;
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.cart-summary {
-    margin-top: 20px;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    text-align: right;
-}
-
-.cart-summary h3 {
-    margin: 0 0 20px;
-    font-size: 20px;
-    color: #333;
-}
-
-.payment-button {
-    padding: 10px 20px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-}
-
-.payment-button:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-}
-
-.empty-cart {
+  }
+  
+  .quantity-controls span {
+    min-width: 20px;
     text-align: center;
-    margin-top: 50px;
-}
-
-.empty-cart-image {
+  }
+  
+  .remove-button {
+    background: none;
+    border: none;
+    color: #e74c3c;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    transition: background 0.2s;
+  }
+  
+  .remove-button:hover {
+    background: rgba(231, 76, 60, 0.1);
+  }
+  
+  .cart-summary {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    text-align: right;
+  }
+  
+  .cart-summary h3 {
+    margin: 0 0 1.5rem;
+    font-size: 1.3rem;
+  }
+  
+  .payment-button {
+    padding: 0.75rem 2rem;
+    background: #42b983;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  
+  .payment-button:not(:disabled):hover {
+    background: #3aa876;
+  }
+  
+  .payment-button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .empty-cart {
+    text-align: center;
+    margin-top: 3rem;
+  }
+  
+  .empty-cart-placeholder {
     width: 200px;
     height: 200px;
-    margin-bottom: 20px;
-}
-
-.empty-cart p {
-    font-size: 18px;
-    color: #666;
-}
-
-.continue-shopping {
+    margin: 0 auto 1.5rem;
+    background-color: #f5f5f5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+  }
+  
+  .empty-cart p {
+    font-size: 1.2rem;
+    color: #7f8c8d;
+    margin-bottom: 1.5rem;
+  }
+  
+  .continue-shopping {
     display: inline-block;
-    margin-top: 10px;
-    padding: 10px 20px;
-    background-color: #007bff;
+    padding: 0.75rem 2rem;
+    background: #42b983;
     color: white;
-    border-radius: 4px;
     text-decoration: none;
-    font-size: 16px;
-}
-
-/* Responsive Design */
-@media (max-width: 600px) {
+    border-radius: 50px;
+    font-weight: 500;
+    transition: background 0.2s;
+  }
+  
+  .continue-shopping:hover {
+    background: #3aa876;
+  }
+  
+  @media (max-width: 768px) {
+    .cart-page {
+      padding: 1rem;
+    }
+    
     .cart-item {
-        flex-direction: column;
-        align-items: flex-start;
+      flex-direction: column;
+      gap: 1rem;
     }
-
+    
     .item-image {
-        width: 100%;
-        height: auto;
-        margin-right: 0;
-        margin-bottom: 10px;
+      width: 100%;
+      height: auto;
+      max-height: 200px;
     }
-
-    .quantity-controls {
-        justify-content: flex-start;
+    
+    .cart-summary {
+      text-align: center;
     }
-}
-</style>
+    
+    .payment-button,
+    .continue-shopping {
+      width: 100%;
+    }
+  }
+  </style>
