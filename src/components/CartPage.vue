@@ -48,7 +48,12 @@
         <!-- Cart Summary -->
         <div class="cart-summary">
           <h3>Total: ₦{{ formatPrice(cartTotal) }}</h3>
-          <button 
+          <router-link to="/payment">
+  <button class="payment-button">
+    Proceed to Payment
+  </button>
+</router-link>
+          <!-- <button 
             @click="proceedToPayment" 
             class="payment-button" 
             :disabled="isProcessing || !hasItems"
@@ -57,7 +62,7 @@
               <i class="fas fa-spinner fa-spin"></i> Processing...
             </span>
             <span v-else>Proceed to Payment</span>
-          </button>
+          </button> -->
         </div>
       </div>
   
@@ -131,57 +136,68 @@
         this.saveCart();
         alert("Item removed from cart");
       },
-      async proceedToPayment() {
-        if (!this.hasItems) return;
+      proceedToPayment() {
+    if (!this.hasItems) return;
+
+    if (!this.isValidOrder) {
+      alert("Please order from one restaurant at a time");
+      return;
+    }
+
+    // Redirect to the payment page directly
+    this.$router.push('/payment');
+  },
+      // async proceedToPayment() {
+      //   if (!this.hasItems) return;
         
-        if (!this.isValidOrder) {
-          alert("Please order from one restaurant at a time");
-          return;
-        }
+      //   if (!this.isValidOrder) {
+      //     alert("Please order from one restaurant at a time");
+      //     return;
+      //   }
   
-        this.isProcessing = true;
+      //   this.isProcessing = true;
         
-        try {
-          const accessToken = localStorage.getItem('accessToken');
-          if (!accessToken) {
-            localStorage.setItem('redirectTo', '/cart');
-            this.$router.push('/login');
-            alert("Please login to continue");
-            return;
-          }
+      //   try {
+      //     const accessToken = localStorage.getItem('accessToken');
+      //     if (!accessToken) {
+      //       localStorage.setItem('redirectTo', '/cart');
+      //       this.$router.push('/login');
+      //       alert("Please login to continue");
+      //       return;
+      //     }
   
-          const orderPayload = {
-            restaurantId: this.restaurantId,
-            orderedItems: this.cartItems.map(item => ({
-              menuItem: item._id,
-              quantity: item.quantity,
-            })),
-          };
+      //     const orderPayload = {
+      //       restaurantId: this.restaurantId,
+      //       orderedItems: this.cartItems.map(item => ({
+      //         menuItem: item._id,
+      //         quantity: item.quantity,
+      //       })),
+      //     };
   
-          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/order`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${accessToken}`,
-            },
-            body: JSON.stringify(orderPayload),
-          });
+      //     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/order`, {
+      //       method: 'POST',
+      //       headers: {
+      //         'Content-Type': 'application/json',
+      //         'Authorization': `Bearer ${accessToken}`,
+      //       },
+      //       body: JSON.stringify(orderPayload),
+      //     });
   
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Failed to place order');
-          }
+      //     if (!response.ok) {
+      //       const errorData = await response.json();
+      //       throw new Error(errorData.message || 'Failed to place order');
+      //     }
   
-          alert("Order placed successfully!");
-          this.clearCart();
-          this.$router.push('/orders');
-        } catch (error) {
-          console.error("Payment error:", error);
-          alert(error.message || "Payment failed. Please try again.");
-        } finally {
-          this.isProcessing = false;
-        }
-      },
+      //     alert("Order placed successfully!");
+      //     this.clearCart();
+      //     this.$router.push('/orders');
+      //   } catch (error) {
+      //     console.error("Payment error:", error);
+      //     alert(error.message || "Payment failed. Please try again.");
+      //   } finally {
+      //     this.isProcessing = false;
+      //   }
+      // },
       clearCart() {
         this.cartItems = [];
         localStorage.removeItem('cart');

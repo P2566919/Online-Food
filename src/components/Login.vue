@@ -45,11 +45,11 @@ export default {
                 if(response.data.user.role !== 'customer') {
                     const redirectTo = localStorage.getItem('redirectTo') || '/dashboard';
                     localStorage.removeItem('redirectTo'); // Clean up
-                    window.location.href = redirectTo; // Redirect user
+                    window.location.href = redirectTo; 
                 }else{
                     const redirectTo = localStorage.getItem('redirectTo') || '/';
-                    localStorage.removeItem('redirectTo'); // Clean up
-                    window.location.href = redirectTo; // Redirect user
+                    localStorage.removeItem('redirectTo'); 
+                    window.location.href = redirectTo; 
                 }
                
 

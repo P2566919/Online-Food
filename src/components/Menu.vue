@@ -4,7 +4,7 @@
       <h2 class="restaurant-title">Menu for {{ restaurant.name }}</h2>
 
       <!-- Menu Table -->
-      <div v-if="menu.length" class="menu-table-container">
+      <div v-if="menu && menu.length" class="menu-table-container">
         <table class="menu-table">
           <thead>
             <tr>
@@ -17,10 +17,10 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="item in menu" :key="item._id">
+            <tr v-for="item in menu" :key="item._id || item.id || item.name">
               <td>{{ item.itemName }}</td>
               <td class="description-cell">{{ item.description }}</td>
-              <td class="price-cell">₦{{ item.price.toLocaleString() }}</td>
+              <td class="price-cell">₦{{ item.price?.toLocaleString() }}</td>
               <td>
                 <span :class="['status-badge', item.availability ? 'available' : 'unavailable']">
                   {{ item.availability ? 'Available' : 'Unavailable' }}
@@ -29,8 +29,8 @@
               <td>
                 <div class="image-preview-container">
                   <img
-                    v-for="image in item.images"
-                    :key="image"
+                    v-for="(image, idx) in item.images || []"
+                    :key="idx"
                     :src="image"
                     alt="Menu Image"
                     class="menu-image-thumbnail"
@@ -95,7 +95,7 @@
             <div class="form-group full-width">
               <label for="images">Upload Images</label>
               <div class="file-upload-area" @click="triggerFileInput">
-                <div v-if="!newMenuItem.images.length" class="upload-prompt">
+                <div v-if="!newMenuItem.images?.length" class="upload-prompt">
                   <i class="fas fa-cloud-upload-alt"></i>
                   <p>Click to upload images or drag and drop</p>
                 </div>
@@ -141,6 +141,8 @@
     </div>
   </div>
 </template>
+
+
 
 <script>
 import axios from 'axios';

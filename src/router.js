@@ -5,7 +5,7 @@ import Login from "./components/Login.vue";
 import Dashboard from "./components/Dashboard.vue";
 import CartPage from "./components/CartPage.vue";
 import MenuItemDetail from "./components/MenuItemDetail.vue";
-
+// import Payment from "./components/Payment.vue"
 const routes = [
   { path: "/register", name: "Register", component: Register },
   { path: "/login", name: "Login", component: Login },
@@ -24,6 +24,11 @@ const routes = [
     component: () => import("@/components/UserMenu.vue"),
     meta: { role: "user" },
   },
+  {
+    path: '/payment',
+    name: 'PaymentPage',
+    component: () => import('@/components/Payment.vue'),
+  },  
   // {
   //   path: "/menu",
   //   name: "Menu",

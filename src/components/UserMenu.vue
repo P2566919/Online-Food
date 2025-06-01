@@ -62,7 +62,7 @@
             </div>
         </div>
 
-        <!-- Menu Section -->
+        
       <div class="menu-section" id="menu">
     <h2 class="menu-title">Explore Our Menu</h2>
     <div class="menu-list">
@@ -84,7 +84,7 @@
                     <input type="number" v-model.number="menu.quantity" min="1" class="quantity-input" />
                 </div>
                 <button class="add-to-cart" @click="addToCart(menu)">Add to Cart</button>
-                <!-- Navigate to Menu Item Detail Page -->
+                
                 <router-link :to="`/menu/${menu._id}`" class="view-details-link">
                     View Details
                 </router-link>
@@ -94,7 +94,7 @@
 </div>
 
 
-        <!-- How It Works -->
+    
         <div class="how-it-works">
             <h2>How It Works</h2>
             <div class="steps">
@@ -185,7 +185,7 @@
             </div>
         </div>
 
-        <!-- Footer -->
+       
         <footer class="footer">
             <div class="footer-content">
                 <div class="footer-section">
@@ -254,13 +254,13 @@ export default {
             localStorage.setItem('cart', JSON.stringify(cart));
             this.cartItems = cart;
             
-            // Create flying item animation
+           
             const flyingItem = document.createElement('div');
             flyingItem.classList.add('flying-item');
             flyingItem.textContent = '+1';
             document.body.appendChild(flyingItem);
             
-            // Animation logic
+           
             setTimeout(() => {
                 flyingItem.remove();
             }, 1000);
