@@ -1,7 +1,9 @@
+// eslint-disable-next-line no-undef
 export default createStore({
   state: {
     cart: [], // Array to store cart items
   },
+  
   mutations: {
     addToCart(state, product) {
       const existingProduct = state.cart.find((item) => item.id === product.id);
